@@ -2,12 +2,131 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>はじめてのサイト</title>
+<title>ミニゲーム</title>
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #ffdff0;
+  font-family: sans-serif;
+}
+
+canvas {
+  display: block;
+}
+
+/* ジャンプボタン */
+#jumpBtn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 20px 30px;
+  font-size: 20px;
+  border-radius: 20px;
+  border: none;
+  background: #ff6fa5;
+  color: white;
+}
+</style>
 </head>
 <body>
 
-<h1>できた！🎉</h1>
-<p>GitHub Pagesデビュー！</p>
+<canvas id="game"></canvas>
+<button id="jumpBtn">ジャンプ</button>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// プレイヤー（四角）
+let player = {
+  x: 100,
+  y: 300,
+  w: 50,
+  h: 50,
+  dy: 0,
+  jump: false
+};
+
+let sweets = [];
+let score = 0;
+
+const gravity = 0.6;
+
+// お菓子生成
+function spawnSweet() {
+  sweets.push({
+    x: canvas.width,
+    y: Math.random() * (canvas.height - 150),
+    size: 20
+  });
+}
+
+// ジャンプ
+function jump() {
+  if (!player.jump) {
+    player.dy = -12;
+    player.jump = true;
+  }
+}
+
+document.getElementById("jumpBtn").addEventListener("click", jump);
+
+// 更新
+function update() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 地面
+  ctx.fillStyle = "#ffe4ec";
+  ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
+
+  // プレイヤー
+  player.dy += gravity;
+  player.y += player.dy;
+
+  if (player.y > 300) {
+    player.y = 300;
+    player.jump = false;
+  }
+
+  ctx.fillStyle = "#ff4d88";
+  ctx.fillRect(player.x, player.y, player.w, player.h);
+
+  // お菓子
+  ctx.fillStyle = "#ffcc00";
+  sweets.forEach((s, i) => {
+    s.x -= 5;
+
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 当たり判定
+    if (
+      player.x < s.x &&
+      player.x + player.w > s.x &&
+      player.y < s.y &&
+      player.y + player.h > s.y
+    ) {
+      sweets.splice(i, 1);
+      score++;
+    }
+  });
+
+  // スコア
+  ctx.fillStyle = "#ff4d88";
+  ctx.font = "30px sans-serif";
+  ctx.fillText("Score: " + score, 20, 50);
+
+  requestAnimationFrame(update);
+}
+
+setInterval(spawnSweet, 1000);
+update();
+</script>
 
 </body>
 </html>
